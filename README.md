@@ -42,7 +42,12 @@ myChart
 
 // You can call any method again to update the chart.
 myChart
-  .data([3, 4, 5])
+  .data({
+    CH: 0.72,
+    DE: 0.53,
+    US: 0.79,
+    // ...
+  })
   .draw();
 
 // Or just call the draw function alone, which is useful for resizing the chart.
