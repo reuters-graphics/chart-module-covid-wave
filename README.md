@@ -5,7 +5,7 @@
 ### Install
 
 ```
-$ yarn add @reuters-graphics/chart-module-covidwave
+$ yarn add https://github.com/reuters-graphics/chart-module-covid-wave.git
 ```
 
 ### Use
