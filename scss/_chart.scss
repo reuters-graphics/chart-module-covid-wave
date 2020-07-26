@@ -1,0 +1,87 @@
+@import "~@reuters-graphics/style-color/scss/categorical/base-lite";
+@import "~@reuters-graphics/style-main/scss/fonts/mixins";
+$half-white: rgba(255, 255, 255, 0.75);
+
+#{$CovidWave-container} {
+
+  /* Write your chart styles here */
+
+  position: relative;
+
+  svg{
+    cursor: crosshair;
+    path{
+      fill: none;
+      // stroke: $half-white;
+      opacity: 0.2;
+      stroke-linejoin:round;
+
+      &.limit{
+        stroke-width: 3px;
+        opacity: 1;
+        stroke-dasharray: 10px 4px;
+      }
+    }
+    line.top-countries {
+      stroke: $red-lite;
+      stroke-width: 1px;
+    }
+  }
+  .chart-container{
+    position: relative;
+  }
+  .top-countries-label{
+    color: $half-white;
+    position: absolute;
+    top: 0;
+    right: 0;
+    max-width: 35%;
+    font-weight: 200;
+    font-size: 1rem;
+  }
+
+  div.label{
+    @include font-sans;
+    position: absolute;
+    display: inline-block;
+    color: $half-white;
+    font-weight: 200;
+    font-size: 1rem;
+    line-height: 1.2rem;
+    &.right {
+      @media(max-width: 600px) {
+        font-size: 0.9rem;
+      }
+
+      span {
+        font-weight: bold;
+        font-size: 1.2rem;
+        @media(max-width: 500px) {
+          font-size: 1.1rem;
+        }
+      }
+    }
+
+    &.left {
+      .country-name {
+        font-size: 1.2rem;
+
+        @media(max-width: 600px) {
+          font-size: 1rem;
+        }
+      }
+      .country-data {
+        font-size: 1rem;
+
+        @media(max-width: 600px) {
+          font-size: 0.9rem;
+        }
+      }
+      span {
+        font-weight: 600;
+      }
+    }
+
+  }
+
+}
