@@ -2,6 +2,8 @@
 
 # CovidWave
 
+[Demo.](https://reuters-graphics.github.io/chart-module-covid-wave/)
+
 ### Install
 
 ```
