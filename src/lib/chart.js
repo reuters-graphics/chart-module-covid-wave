@@ -19,6 +19,10 @@ class CovidWave extends ChartComponent {
     },
     thresholdText: '{{ &number }} countries are still at the peak of their infection curve.',
     peakText: '{{ &percent }} of peak',
+    legendText: {
+      max: 'Countries near their highest daily average reported infections.',
+      min: 'Countries near zero daily average reported infections.',
+    },
   };
 
   defaultData = {};
@@ -31,7 +35,11 @@ class CovidWave extends ChartComponent {
     const { width } = node.getBoundingClientRect();
     const { height } = props;
 
-    const svg = d3.select(node).appendSelect('svg')
+    const legend = d3.select(node).appendSelect('div.legend');
+
+    const chart = d3.select(node).appendSelect('div.chart');
+
+    const svg = chart.appendSelect('svg.wave-chart')
       .attr('width', width)
       .attr('height', height)
       .appendSelect('g')
@@ -120,7 +128,7 @@ class CovidWave extends ChartComponent {
 
     const countriesAboveThreshold = Object.keys(data).filter(c => data[c] > last(props.thresholdDomain)).length;
 
-    d3.select(node).appendSelect('div.label.right')
+    chart.appendSelect('div.label.right')
       .style('bottom', `${height - y(0.70)}px`)
       .style('right', '0px')
       .style('width', `${x(0.7)}px`)
@@ -130,7 +138,7 @@ class CovidWave extends ChartComponent {
       .select('span')
       .style('color', last(props.thresholdRange.color));
 
-    const highlightLab = d3.select(node).appendSelect('div.label.left')
+    const highlightLab = chart.appendSelect('div.label.left')
       .style('top', '0px')
       .style('left', '0px')
       .style('width', `${x(0.7)}px`)
@@ -187,6 +195,97 @@ class CovidWave extends ChartComponent {
 
     mouseRect.on('mouseleave.wave', removeHighlight);
     mouseRect.on('touchend.wave touchcancel.wave', removeHighlight);
+
+    // legend.appendSelect('h6')
+    //   .text('How to read this chart');
+
+    const maxLegend = legend.appendSelect('div.max.legend-container');
+    const minLegend = legend.appendSelect('div.min.legend-container');
+
+    const legendX = d3.scaleLinear()
+      .domain([0, 2])
+      .range([0, 100]);
+
+    const legendY = d3.scaleLinear()
+      .domain([0, 1])
+      .range([30, 0]);
+
+    const legendLine = d3.line()
+      .curve(d3.curveMonotoneX)
+      .x(d => legendX(d.x))
+      .y(d => legendY(d.y));
+
+    const maxLegendSvg = maxLegend.appendSelect('svg')
+      .attr('width', 100)
+      .attr('height', 30);
+
+    maxLegendSvg
+      .appendSelect('path.max.example')
+      .datum([
+        { x: 0, y: 0 },
+        { x: 0.5, y: 0.75 / 4 },
+        { x: 1, y: 0.75 },
+        { x: 1.5, y: 0.75 / 4 },
+        { x: 2, y: 0 },
+      ])
+      .attr('stroke', last(color.range()))
+      .attr('stroke-width', 1)
+      .transition(t)
+      .attr('d', legendLine);
+
+    maxLegendSvg
+      .appendSelect('path.max.guide')
+      .datum([
+        { x: 0, y: 0 },
+        { x: 0.5, y: 1 / 4 },
+        { x: 1, y: 1 },
+        { x: 1.5, y: 1 / 4 },
+        { x: 2, y: 0 },
+      ])
+      .attr('stroke', last(color.range()))
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '5px 2px')
+      .transition(t)
+      .attr('d', legendLine);
+
+    maxLegend.appendSelect('div')
+      .text(props.legendText.max);
+
+    const minLegendSvg = minLegend.appendSelect('svg')
+      .attr('width', 100)
+      .attr('height', 30);
+
+    minLegendSvg
+      .appendSelect('path.min.example')
+      .datum([
+        { x: 0, y: 0 },
+        { x: 0.5, y: 0.2 / 4 },
+        { x: 1, y: 0.2 },
+        { x: 1.5, y: 0.2 / 4 },
+        { x: 2, y: 0 },
+      ])
+      .attr('stroke', color.range()[0])
+      .attr('stroke-width', 1)
+      .transition(t)
+      .attr('d', legendLine);
+
+    minLegendSvg
+      .appendSelect('path.max.guide')
+      .datum([
+        { x: 0, y: 0 },
+        { x: 0.5, y: 1 / 4 },
+        { x: 1, y: 1 },
+        { x: 1.5, y: 1 / 4 },
+        { x: 2, y: 0 },
+      ])
+      .attr('stroke', last(color.range()))
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '5px 2px')
+      .transition(t)
+      .attr('d', legendLine);
+
+    minLegend.appendSelect('div')
+      .text(props.legendText.min);
 
     return this;
   }

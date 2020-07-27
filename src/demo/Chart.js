@@ -19,11 +19,16 @@ class ChartComponent extends React.Component {
 
   componentDidMount() {
     // Use our chart module.
-    this.chart
-      .selection(this.chartContainer.current)
-      .data(cases)
-      .props({ fill: base.blue.hex })
-      .draw();
+    fetch('http://graphics.thomsonreuters.com/data/2020/coronavirus/global-tracker/statistics.json')
+      .then(r => r.json())
+      .then(data => {
+        const { cases } = data.distributionRanks;
+        this.chart
+          .selection(this.chartContainer.current)
+          .data(cases)
+          .props({ fill: base.blue.hex })
+          .draw();
+      });
 
     // Add a listener to resize chart with the window.
     window.addEventListener('resize', this.resize);
