@@ -3,9 +3,6 @@ import ChartContainer from './furniture/ChartContainer';
 import React from 'react';
 import { base } from '@reuters-graphics/style-color/dist/categorical';
 import debounce from 'lodash/debounce';
-import globalStatistics from './demoData.json';
-
-const { cases } = globalStatistics.distributionRanks;
 
 class ChartComponent extends React.Component {
   state = { width: '' };
@@ -19,7 +16,7 @@ class ChartComponent extends React.Component {
 
   componentDidMount() {
     // Use our chart module.
-    fetch('http://graphics.thomsonreuters.com/data/2020/coronavirus/global-tracker/statistics.json')
+    fetch('https://graphics.thomsonreuters.com/data/2020/coronavirus/global-tracker/statistics.json')
       .then(r => r.json())
       .then(data => {
         const { cases } = data.distributionRanks;
