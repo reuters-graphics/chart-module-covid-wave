@@ -519,7 +519,11 @@ var CovidWave = /*#__PURE__*/function (_ChartComponent) {
         opacity: [0.1, 0.2, 0.4]
       },
       thresholdText: '{{ &number }} countries are still at the peak of their infection curve.',
-      peakText: '{{ &percent }} of peak'
+      peakText: '{{ &percent }} of peak',
+      legendText: {
+        max: 'Countries near their highest daily average reported infections.',
+        min: 'Countries near zero daily average reported infections.'
+      }
     });
 
     _defineProperty(_assertThisInitialized(_this), "defaultData", {});
@@ -538,7 +542,9 @@ var CovidWave = /*#__PURE__*/function (_ChartComponent) {
           width = _node$getBoundingClie.width;
 
       var height = props.height;
-      var svg = d3.select(node).appendSelect('svg').attr('width', width).attr('height', height).appendSelect('g').attr('transform', 'translate(0, 10)');
+      var legend = d3.select(node).appendSelect('div.legend');
+      var chart = d3.select(node).appendSelect('div.chart');
+      var svg = chart.appendSelect('svg.wave-chart').attr('width', width).attr('height', height).appendSelect('g').attr('transform', 'translate(0, 10)');
       var t = d3.transition().duration(250);
       var linesData = Object.keys(data).map(function (c) {
         var lineData = [{
@@ -618,10 +624,10 @@ var CovidWave = /*#__PURE__*/function (_ChartComponent) {
       var countriesAboveThreshold = Object.keys(data).filter(function (c) {
         return data[c] > last(props.thresholdDomain);
       }).length;
-      d3.select(node).appendSelect('div.label.right').style('bottom', "".concat(height - y(0.70), "px")).style('right', '0px').style('width', "".concat(x(0.7), "px")).html(mustache.render(props.thresholdText, {
+      chart.appendSelect('div.label.right').style('bottom', "".concat(height - y(0.70), "px")).style('right', '0px').style('width', "".concat(x(0.7), "px")).html(mustache.render(props.thresholdText, {
         number: "<span>".concat(countriesAboveThreshold, "</span>")
       })).select('span').style('color', last(props.thresholdRange.color));
-      var highlightLab = d3.select(node).appendSelect('div.label.left').style('top', '0px').style('left', '0px').style('width', "".concat(x(0.7), "px")).html('');
+      var highlightLab = chart.appendSelect('div.label.left').style('top', '0px').style('left', '0px').style('width', "".concat(x(0.7), "px")).html('');
       var mouseRect = svg.appendSelect('rect').attr('width', width).attr('height', height).attr('x', 0).attr('y', 0).style('fill', 'transparent');
 
       var highlightCountry = function highlightCountry(yCoord) {
@@ -667,7 +673,86 @@ var CovidWave = /*#__PURE__*/function (_ChartComponent) {
         highlightCountry(coordinates[1]);
       }, 50), true);
       mouseRect.on('mouseleave.wave', removeHighlight);
-      mouseRect.on('touchend.wave touchcancel.wave', removeHighlight);
+      mouseRect.on('touchend.wave touchcancel.wave', removeHighlight); // legend.appendSelect('h6')
+      //   .text('How to read this chart');
+
+      var maxLegend = legend.appendSelect('div.max.legend-container');
+      var minLegend = legend.appendSelect('div.min.legend-container');
+      var legendX = d3.scaleLinear().domain([0, 2]).range([0, 100]);
+      var legendY = d3.scaleLinear().domain([0, 1]).range([30, 0]);
+      var legendLine = d3.line().curve(d3.curveMonotoneX).x(function (d) {
+        return legendX(d.x);
+      }).y(function (d) {
+        return legendY(d.y);
+      });
+      var maxLegendSvg = maxLegend.appendSelect('svg').attr('width', 100).attr('height', 30);
+      maxLegendSvg.appendSelect('path.max.example').datum([{
+        x: 0,
+        y: 0
+      }, {
+        x: 0.5,
+        y: 0.75 / 4
+      }, {
+        x: 1,
+        y: 0.75
+      }, {
+        x: 1.5,
+        y: 0.75 / 4
+      }, {
+        x: 2,
+        y: 0
+      }]).attr('stroke', last(color.range())).attr('stroke-width', 1).transition(t).attr('d', legendLine);
+      maxLegendSvg.appendSelect('path.max.guide').datum([{
+        x: 0,
+        y: 0
+      }, {
+        x: 0.5,
+        y: 1 / 4
+      }, {
+        x: 1,
+        y: 1
+      }, {
+        x: 1.5,
+        y: 1 / 4
+      }, {
+        x: 2,
+        y: 0
+      }]).attr('stroke', last(color.range())).attr('stroke-width', 1).attr('stroke-dasharray', '5px 2px').transition(t).attr('d', legendLine);
+      maxLegend.appendSelect('div').text(props.legendText.max);
+      var minLegendSvg = minLegend.appendSelect('svg').attr('width', 100).attr('height', 30);
+      minLegendSvg.appendSelect('path.min.example').datum([{
+        x: 0,
+        y: 0
+      }, {
+        x: 0.5,
+        y: 0.2 / 4
+      }, {
+        x: 1,
+        y: 0.2
+      }, {
+        x: 1.5,
+        y: 0.2 / 4
+      }, {
+        x: 2,
+        y: 0
+      }]).attr('stroke', color.range()[0]).attr('stroke-width', 1).transition(t).attr('d', legendLine);
+      minLegendSvg.appendSelect('path.max.guide').datum([{
+        x: 0,
+        y: 0
+      }, {
+        x: 0.5,
+        y: 1 / 4
+      }, {
+        x: 1,
+        y: 1
+      }, {
+        x: 1.5,
+        y: 1 / 4
+      }, {
+        x: 2,
+        y: 0
+      }]).attr('stroke', last(color.range())).attr('stroke-width', 1).attr('stroke-dasharray', '5px 2px').transition(t).attr('d', legendLine);
+      minLegend.appendSelect('div').text(props.legendText.min);
       return this;
     }
   }]);
