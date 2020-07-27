@@ -150,13 +150,16 @@ class CovidWave extends ChartComponent {
       const dataPoints = Object.keys(data).filter(c => +data[c] === dataPoint[2].y);
       const isoAlpha2 = dataPoints[random(0, dataPoints.length - 1)];
       const country = atlas.getCountry(isoAlpha2);
+      const percent = data[isoAlpha2] * 100;
       highlightLab
         .appendSelect('div.country-name')
         .text(country.translations[props.locale]);
       highlightLab
         .appendSelect('div.country-data')
         .html(mustache.render(props.peakText, {
-          percent: `<span>${Math.round(data[isoAlpha2] * 100)}%</span>`,
+          percent: percent < 1 ?
+            '<span>&lt; 1%</span>' :
+            `<span>${Math.round(percent)}%</span>`,
         }))
         .select('span')
         .style('color', color(data[isoAlpha2]));
