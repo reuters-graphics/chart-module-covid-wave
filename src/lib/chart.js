@@ -18,7 +18,10 @@ class CovidWave extends ChartComponent {
       opacity: [0.1, 0.2, 0.4],
     },
     thresholdText: '{{ &number }} countries are still at the peak of their infection curve.',
-    peakText: '{{ &percent }} of peak',
+    peakText: {
+      ofPeak: '{{ &percent }} of peak',
+      atPeak: 'At peak',
+    },
     legendText: {
       max: 'Countries near their highest daily average reported infections.',
       min: 'Countries near zero daily average reported infections.',
@@ -129,7 +132,7 @@ class CovidWave extends ChartComponent {
     const countriesAboveThreshold = Object.keys(data).filter(c => data[c] > last(props.thresholdDomain)).length;
 
     chart.appendSelect('div.label.right')
-      .style('bottom', `${height - y(0.70)}px`)
+      .style('bottom', `${height - y(props.thresholdDomain.slice(-1)[0])}px`)
       .style('right', '0px')
       .style('width', `${x(0.7)}px`)
       .html(mustache.render(props.thresholdText, {
@@ -164,11 +167,17 @@ class CovidWave extends ChartComponent {
         .text(country.translations[props.locale]);
       highlightLab
         .appendSelect('div.country-data')
-        .html(mustache.render(props.peakText, {
-          percent: percent < 1 ?
-            '<span>&lt; 1%</span>' :
-            `<span>${Math.round(percent)}%</span>`,
-        }))
+        .html(
+          percent === 100 ? (
+            `<span>${props.peakText.atPeak}</span>`
+          ) : (
+            mustache.render(props.peakText.ofPeak, {
+              percent: percent < 1 ?
+                '<span>&lt; 1%</span>' :
+                `<span>${Math.round(percent)}%</span>`,
+            })
+          )
+        )
         .select('span')
         .style('color', color(data[isoAlpha2]));
       svg.selectAll('path.countries')

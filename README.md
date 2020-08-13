@@ -36,7 +36,10 @@ myChart
       opacity: [0.1, 0.2, 0.4],
     },
     thresholdText: '{{ &number }} countries are still at the peak of their infection curve.',
-    peakText: '{{ &percent }} of peak',
+    peakText: {
+      ofPeak: '{{ &percent }} of peak',
+      atPeak: 'At peak',
+    },
   })
   .draw();
 
