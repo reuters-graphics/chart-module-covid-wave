@@ -621,13 +621,13 @@ var CovidWave = /*#__PURE__*/function (_ChartComponent) {
       }]).attr('stroke', function (d) {
         return color(raisedY);
       }).transition(t).attr('d', thresholdLine);
-      svg.appendSelect('line.top-countries').attr('x1', x(1.28)).attr('x2', x(2)).attr('y1', y(0.70)).attr('y2', y(0.70)).attr('stroke', function (d) {
+      svg.appendSelect('line.top-countries').attr('x1', x(1.28)).attr('x2', x(2)).attr('y1', y(last(color.domain()))).attr('y2', y(last(color.domain()))).attr('stroke', function (d) {
         return color(raisedY);
       });
       var countriesAboveThreshold = Object.keys(data).filter(function (c) {
         return data[c] > last(props.thresholdDomain);
       }).length;
-      chart.appendSelect('div.label.right').style('bottom', "".concat(height - y(props.thresholdDomain.slice(-1)[0]), "px")).style('right', '0px').style('width', "".concat(x(0.7), "px")).html(mustache.render(props.thresholdText, {
+      chart.appendSelect('div.label.right').style('bottom', "".concat(height - y(last(color.domain())), "px")).style('right', '0px').style('width', "".concat(x(0.7), "px")).html(mustache.render(props.thresholdText, {
         number: "<span>".concat(countriesAboveThreshold, "</span>")
       })).select('span').style('color', last(props.thresholdRange.color));
       var highlightLab = chart.appendSelect('div.label.left').style('top', '0px').style('left', '0px').style('width', "".concat(x(0.7), "px")).html('');
