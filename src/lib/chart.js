@@ -125,14 +125,14 @@ class CovidWave extends ChartComponent {
     svg.appendSelect('line.top-countries')
       .attr('x1', x(1.28))
       .attr('x2', x(2))
-      .attr('y1', y(0.70))
-      .attr('y2', y(0.70))
+      .attr('y1', y(last(color.domain())))
+      .attr('y2', y(last(color.domain())))
       .attr('stroke', d => color(raisedY));
 
     const countriesAboveThreshold = Object.keys(data).filter(c => data[c] > last(props.thresholdDomain)).length;
 
     chart.appendSelect('div.label.right')
-      .style('bottom', `${height - y(props.thresholdDomain.slice(-1)[0])}px`)
+      .style('bottom', `${height - y(last(color.domain()))}px`)
       .style('right', '0px')
       .style('width', `${x(0.7)}px`)
       .html(mustache.render(props.thresholdText, {
