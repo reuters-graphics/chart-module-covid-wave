@@ -2,6 +2,7 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
+var bodyScrollLock = require('body-scroll-lock');
 var AtlasMetadataClient = _interopDefault(require('@reuters-graphics/graphics-atlas-client'));
 var d3 = require('d3');
 var merge = _interopDefault(require('lodash/merge'));
@@ -518,7 +519,11 @@ var CovidWave = /*#__PURE__*/function (_ChartComponent) {
         color: ['#ccc', '#f68e26', '#de2d26'],
         opacity: [0.1, 0.2, 0.4]
       },
-      thresholdText: '{{ &number }} countries are still at the peak of their infection curve.',
+      thresholdText: {
+        none: 'All countries are currently below the peak of their infection curve.',
+        one: '{{ &number }} country is still near the peak of its infection curve.',
+        more: '{{ &number }} countries are still near the peak of their infection curve.'
+      },
       peakText: {
         ofPeak: '{{ &percent }} of peak',
         atPeak: 'At peak'
@@ -535,6 +540,11 @@ var CovidWave = /*#__PURE__*/function (_ChartComponent) {
   }
 
   _createClass(CovidWave, [{
+    key: "destroy",
+    value: function destroy() {
+      bodyScrollLock.clearAllBodyScrollLocks();
+    }
+  }, {
     key: "draw",
     value: function draw() {
       var data = this.data();
@@ -627,11 +637,23 @@ var CovidWave = /*#__PURE__*/function (_ChartComponent) {
       var countriesAboveThreshold = Object.keys(data).filter(function (c) {
         return data[c] > last(props.thresholdDomain);
       }).length;
-      chart.appendSelect('div.label.right').style('bottom', "".concat(height - y(last(color.domain())), "px")).style('right', '0px').style('width', "".concat(x(0.7), "px")).html(mustache.render(props.thresholdText, {
-        number: "<span>".concat(countriesAboveThreshold, "</span>")
-      })).select('span').style('color', last(props.thresholdRange.color));
+      chart.appendSelect('div.label.right').style('bottom', "".concat(height - y(last(color.domain())), "px")).style('right', '0px').style('width', "".concat(x(0.7), "px")).html(function () {
+        if (countriesAboveThreshold > 1) {
+          return mustache.render(props.thresholdText.more, {
+            number: "<span>".concat(countriesAboveThreshold, "</span>")
+          });
+        }
+
+        if (countriesAboveThreshold === 1) {
+          return mustache.render(props.thresholdText.one, {
+            number: "<span>".concat(countriesAboveThreshold, "</span>")
+          });
+        }
+
+        return mustache.render(props.thresholdText.none);
+      }).select('span').style('color', last(props.thresholdRange.color));
       var highlightLab = chart.appendSelect('div.label.left').style('top', '0px').style('left', '0px').style('width', "".concat(x(0.7), "px")).html('');
-      var mouseRect = svg.appendSelect('rect').attr('width', width).attr('height', height).attr('x', 0).attr('y', 0).style('fill', 'transparent');
+      var mouseRect = svg.appendSelect('rect.touch-capture').attr('width', width * 0.5).attr('height', height).attr('x', width * 0.25).attr('y', 0).style('fill', 'transparent');
 
       var highlightCountry = function highlightCountry(yCoord) {
         var dataCoord = y.invert(yCoord);
@@ -655,6 +677,7 @@ var CovidWave = /*#__PURE__*/function (_ChartComponent) {
       };
 
       var removeHighlight = function removeHighlight() {
+        bodyScrollLock.enableBodyScroll(mouseRect.node());
         highlightLab.html('');
         svg.selectAll('path.countries').style('opacity', function (d) {
           return opacity(data[d[0].c]);
@@ -667,6 +690,7 @@ var CovidWave = /*#__PURE__*/function (_ChartComponent) {
         highlightCountry(coordinates[1]);
       }, 50));
       mouseRect.on('touchstart.wave touchmove.wave', throttle(function () {
+        bodyScrollLock.disableBodyScroll(mouseRect.node());
         if (!d3.event) return;
 
         var _d3$touches = d3.touches(svg.node()),
@@ -676,7 +700,10 @@ var CovidWave = /*#__PURE__*/function (_ChartComponent) {
         highlightCountry(coordinates[1]);
       }, 50), true);
       mouseRect.on('mouseleave.wave', removeHighlight);
-      mouseRect.on('touchend.wave touchcancel.wave', removeHighlight); // legend.appendSelect('h6')
+      mouseRect.on('touchend.wave', removeHighlight);
+      mouseRect.on('touchcancel.wave', function () {
+        bodyScrollLock.enableBodyScroll(mouseRect.node());
+      }); // legend.appendSelect('h6')
       //   .text('How to read this chart');
 
       var maxLegend = legend.appendSelect('div.max.legend-container');

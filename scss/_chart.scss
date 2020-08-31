@@ -66,6 +66,10 @@ $half-white: rgba(255, 255, 255, 0.75);
         stroke: $red-lite;
         stroke-width: 1px;
       }
+
+      rect.touch-capture {
+        touch-action: pan-x;
+      }
     }
     .chart-container{
       position: relative;

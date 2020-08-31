@@ -9,6 +9,7 @@ $CovidWave-container: '#chart';
 
 body {
   background-color: #2f353f;
+  min-height: 300vh;
 }
 
 #{$CovidWave-container} {

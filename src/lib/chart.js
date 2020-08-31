@@ -1,3 +1,5 @@
+import { clearAllBodyScrollLocks, disableBodyScroll, enableBodyScroll } from 'body-scroll-lock';
+
 import AtlasMetadataClient from '@reuters-graphics/graphics-atlas-client';
 import ChartComponent from './base/ChartComponent';
 import d3 from './utils/d3';
@@ -17,7 +19,11 @@ class CovidWave extends ChartComponent {
       color: ['#ccc', '#f68e26', '#de2d26'],
       opacity: [0.1, 0.2, 0.4],
     },
-    thresholdText: '{{ &number }} countries are still at the peak of their infection curve.',
+    thresholdText: {
+      none: 'All countries are currently below the peak of their infection curve.',
+      one: '{{ &number }} country is still near the peak of its infection curve.',
+      more: '{{ &number }} countries are still near the peak of their infection curve.',
+    },
     peakText: {
       ofPeak: '{{ &percent }} of peak',
       atPeak: 'At peak',
@@ -29,6 +35,10 @@ class CovidWave extends ChartComponent {
   };
 
   defaultData = {};
+
+  destroy() {
+    clearAllBodyScrollLocks();
+  }
 
   draw() {
     const data = this.data();
@@ -135,9 +145,19 @@ class CovidWave extends ChartComponent {
       .style('bottom', `${height - y(last(color.domain()))}px`)
       .style('right', '0px')
       .style('width', `${x(0.7)}px`)
-      .html(mustache.render(props.thresholdText, {
-        number: `<span>${countriesAboveThreshold}</span>`,
-      }))
+      .html(() => {
+        if (countriesAboveThreshold > 1) {
+          return mustache.render(props.thresholdText.more, {
+            number: `<span>${countriesAboveThreshold}</span>`,
+          });
+        }
+        if (countriesAboveThreshold === 1) {
+          return mustache.render(props.thresholdText.one, {
+            number: `<span>${countriesAboveThreshold}</span>`,
+          });
+        }
+        return mustache.render(props.thresholdText.none);
+      })
       .select('span')
       .style('color', last(props.thresholdRange.color));
 
@@ -147,10 +167,10 @@ class CovidWave extends ChartComponent {
       .style('width', `${x(0.7)}px`)
       .html('');
 
-    const mouseRect = svg.appendSelect('rect')
-      .attr('width', width)
+    const mouseRect = svg.appendSelect('rect.touch-capture')
+      .attr('width', width * 0.5)
       .attr('height', height)
-      .attr('x', 0)
+      .attr('x', width * 0.25)
       .attr('y', 0)
       .style('fill', 'transparent');
 
@@ -185,6 +205,7 @@ class CovidWave extends ChartComponent {
     };
 
     const removeHighlight = () => {
+      enableBodyScroll(mouseRect.node());
       highlightLab.html('');
       svg.selectAll('path.countries')
         .style('opacity', d => opacity(data[d[0].c]));
@@ -197,13 +218,17 @@ class CovidWave extends ChartComponent {
     }, 50));
 
     mouseRect.on('touchstart.wave touchmove.wave', throttle(() => {
+      disableBodyScroll(mouseRect.node());
       if (!d3.event) return;
       const [coordinates] = d3.touches(svg.node());
       highlightCountry(coordinates[1]);
     }, 50), true);
 
     mouseRect.on('mouseleave.wave', removeHighlight);
-    mouseRect.on('touchend.wave touchcancel.wave', removeHighlight);
+    mouseRect.on('touchend.wave', removeHighlight);
+    mouseRect.on('touchcancel.wave', () => {
+      enableBodyScroll(mouseRect.node());
+    });
 
     // legend.appendSelect('h6')
     //   .text('How to read this chart');
